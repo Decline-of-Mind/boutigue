@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% load static %} {% block page_header %}
+{% extends "base.html" %} {% load static %} {% load bag_tools %} {% block page_header %}
 <div class="container header-container">
   <div class="row">
     <div class="col"></div>
@@ -18,10 +18,8 @@
     <div class="row">
         <div class="col">
             {% if bag_items %}
-                {{ bag_items }}
                 <br>
                 <br>
-                {{ request.session.bag }}
                 <div class="table-responsive rounded">
                     <table class="table table-sm table-borderless">
                         <thead class="text-black">
@@ -41,14 +39,14 @@
                                 </td>
                                 <td class="py-3">
                                     <p class="my-0"><strong>{{ item.product.name }}</strong></p>
-                                    <p class="my-0"><strong>Size:</strong>{% if item.products.has_sizes %}{{ item.size|upper }}{% else %} N/A{% endif %} </p>
+                                    <p class="my-0"><strong>Size:</strong>{% if item.product.has_sizes %}{{ item.size|upper }}{% else %} N/A{% endif %} </p>
                                     <p class="my-0 small text-muted">SKU: {{ item.product.sku|upper }}</p>
                                 </td>
                                 <td class="py-3">
-                                    <p class="my-0">{{ item.product.price }}</p>
+                                    <p class="my-0">${{ item.product.price }}</p>
                                 </td>
                                 <td class="py-3">
-                                    <form class="form update-form" method="POST" action="">
+                                    <form class="form update-form" method="POST" action="{% url 'adjust_bag' item.item_id %}">
                                         {% csrf_token %}
                                         <div class="form-group">
                                             <div class="input-group">
@@ -75,18 +73,17 @@
                                                     </button>
                                                 </div>
                                                 {% if item.product.has_sizes %}
-                                                    <input type="hidden" name="product_size" value="item.size">
+                                                    <input type="hidden" name="product_size" value="{{ item.size }}">
                                                 {% endif %}
                                             </div>
                                         </div>
-                                    </form>
-                                    <a class="update-link text-info"><small>Update</small></a>
-                                    <a class="remove-item text-danger float-right" id="remove_{{ item.item_id }}" data-size="{{ item.size }}"><small>Remove</small></a>
+                                        </form>
+                                        <a class="update-link text-info"><small>Update</small></a>
+                                        <a class="remove-item text-danger float-right" id="remove_{{ item.item_id }}" data-product_size="{{ item.size }}"><small>Remove</small></a>
                                     
-                                
                                 </td>
                                 <td class="py-3">
-                                    <p class="my-0">{{ item.product.price }}</p>
+                                    <p class="my-0">${{ item.product.price | calc_subtotal:item.quantity }}</p>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -141,7 +138,7 @@
 <script type="text/javascript" >
     // Update quantity on click
     $('.update-link').click(function(e) {
-        var form = $(this).prev('.update-link');
+        var form = $(this).prev('.update-form');
         form.submit();
     })
 
@@ -149,9 +146,9 @@
     $('.remove-item').click(function(e) {
         var csrfToken = "{{ csrf_token }}"
         var itemId = $(this).attr('id').split('remove_')[1]
-        var size = $(this).data('size');
-        var url = `/bag/remove/${itemId}`
-        var data = {'csrfmiddleware': csrfToken, 'size': size}
+        var size = $(this).data('product_size');
+        var url = `/bag/remove/${itemId}/`
+        var data = {'csrfmiddlewaretoken': csrfToken, 'product_size': size}
 
         $.post(url, data)
          .done(function() {
