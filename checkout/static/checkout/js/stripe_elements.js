@@ -44,7 +44,7 @@ card.addEventListener('change', function(event) {
         ;
         $(errorDiv).html(html);
     } else {
-        error.Div.textContent = '';
+        errorDiv.textContent = '';
     }
 });
 
