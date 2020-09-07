@@ -1,4 +1,4 @@
-
+console.log(`This is Stripe elements js file running`);
 /*
     Core logic/payment flow for this comes from here:
     https://stripe.com/docs/payments/accept-a-payment
@@ -34,7 +34,7 @@ card.mount('#card-element');
 // Handle realtime validation errors on the card element
 
 card.addEventListener('change', function(event) { 
-    var errorDiv = document.getElementById('card-errors')
+    var errorDiv = document.getElementById('card-errors');
     if (event.error) {
         var html = `
             <span class="icon" role="alert">
@@ -118,6 +118,6 @@ form.addEventListener('submit', function(ev) {
         });  
     }).fail(function() {
         // just reload the page, the error will be in django messages
-        location.reload()
-    })
+        location.reload();
+    });
 });
